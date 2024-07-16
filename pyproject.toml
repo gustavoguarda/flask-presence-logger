@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "flask-presence-logger"
+version = "0.1.0"
+description = "Presence Logger with flask"
+authors = ["Gustavo Guarda <gustavoguarda@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+flask = "^2.0.0"
+flask-httpauth = "^4.4.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

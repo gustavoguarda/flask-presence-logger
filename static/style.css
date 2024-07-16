@@ -1,0 +1,96 @@
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    text-align: left;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+  }
+
+  #datepicker {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+
+  .date-div {
+    margin: 20px 0;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .name-div {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .name-div input[type="checkbox"] {
+    margin-right: 10px;
+  }
+
+  .ui-datepicker-calendar .ui-state-default {
+      position: relative;
+  }
+  
+  .john-present, .mary-present {
+      position: relative;
+  }
+  
+  .john-present::before, .mary-present::after {
+      content: "\2022";
+      font-size: 1em;
+      line-height: 0.5em;
+      position: absolute;
+      bottom: -5px;
+      z-index: 2;
+  }
+  
+  .john-present::before {
+      left: 5px;
+      color: blue;
+  }
+  
+  .mary-present::after {
+      right: 5px;
+      color: red;
+  }
+
+  .freelancer-icon {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  
+  .freelancer-John {
+    background-color: blue;
+  }
+  
+  .freelancer-Mary {
+    background-color: red;
+  }

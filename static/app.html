@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- <base href="http://localhost:8080/"> -->
+  <title>Attendance Calendar</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+  <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+
+<div id="datepicker"></div>
+<div class="date-div"></div>
+<table id="namesTable">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Attendance</th>
+            <th>Paid</th>
+        </tr>
+    </thead>
+    <tbody id="namesContainer"></tbody>
+</table>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
+<script src="static/datepicker-pt-BR.js"></script>
+
+<script>
+$.datepicker.setDefaults($.datepicker.regional['pt-BR']);
+
+var names = [
+  { "name": "John" },
+  { "name": "Mary" }
+];
+
+var presenceData = [];
+
+function fetchPresence(dateText) {
+  $('#namesContainer .date-div').text('Date: ' + dateText);
+  $('#namesContainer input[type="checkbox"]').prop('checked', false);
+  
+  $.ajax({
+      url: '/presence',
+      type: 'get',
+      data: { date: dateText },
+      success: function(response) {
+            if (response.status === 'success') {
+                var data = response.data;
+                
+                $.each(names, function(i, item) {
+                    var present = false;
+                    var paid = false;
+
+                    var name_entry = data.names.find(n => n.name === item.name);
+                    if (name_entry) {
+                        present = name_entry.present;
+                        paid = name_entry.paid || false;
+                    }
+
+                    $('#' + item.name + '-presence').prop('checked', present);
+                    $('#' + item.name + '-payment').prop('checked', paid);
+                });
+            } else {
+              $.each(names, function(i, item) {
+                  $('#' + item.name).prop('checked', false);
+              });
+          }
+      },
+      error: function() {
+          $.each(names, function(i, item) {
+              $('#' + item.name).prop('checked', false);
+          });
+      }
+  });
+}
+
+$.ajax({
+  url: '/all-presence',
+  type: 'get',
+  success: function(response) {
+    if (response.status === 'success') {
+      presenceData = response.data;
+
+      $("#datepicker").datepicker({
+        ...$.datepicker.regional['pt-BR'], // Include this for translation
+        dateFormat: 'yy-mm-dd',
+        beforeShowDay: function(date) {
+          var dateString = $.datepicker.formatDate('yy-mm-dd', date);
+          var entry = presenceData.find(entry => entry.date === dateString);
+          
+          if (entry) {
+            var className = '';
+            if (entry.names.some(n => n.name === 'John' && n.present)) className += ' john-present';
+            if (entry.names.some(n => n.name === 'Mary' && n.present)) className += ' mary-present';
+            
+            return [true, className];
+          }
+          return [true, ""];
+        },
+        onSelect: function(dateText) {
+          fetchPresence(dateText);
+        }
+      }); // end of datepicker
+    }
+  }
+});
+
+$('#namesContainer').on('change', 'input[type="checkbox"]', function() {
+    var name = $(this).attr('data-name');
+    var date = $("#datepicker").datepicker("getDate");
+    var formattedDate = $.datepicker.formatDate('yy-mm-dd', date);  
+
+    var actionType = $(this).attr('data-type'); // "presence" or "payment"
+    
+    var updateData = {
+        name: name,
+        date: formattedDate
+    };
+
+    if(actionType === "presence") {
+        updateData.present = $(this).is(":checked");
+    } else if(actionType === "payment") {
+        updateData.paid = $(this).is(":checked");
+    }
+
+    $.ajax({
+        url: '/presence',
+        type: 'post',
+        contentType: 'application/json',
+        data: JSON.stringify(updateData),
+        success: function() {
+            console.log('Data saved successfully!');
+
+            // Update the presenceData variable with the new data
+            var entry = presenceData.find(entry => entry.date === formattedDate);
+            if (entry) {
+                var name_entry = entry.names.find(n => n.name === name);
+                if (name_entry) {
+                    if (actionType === "presence") {
+                        name_entry.present = updateData.present;
+                    } else if (actionType === "payment") {
+                        name_entry.paid = updateData.paid;
+                    }
+                } else {
+                    entry.names.push({
+                        name: name,
+                        present: actionType === "presence" ? updateData.present : false,
+                        paid: actionType === "payment" ? updateData.paid : false
+                    });
+                }
+            } else {
+                presenceData.push({
+                    date: formattedDate,
+                    names: [{
+                        name: name,
+                        present: actionType === "presence" ? updateData.present : false,
+                        paid: actionType === "payment" ? updateData.paid : false
+                    }]
+                });
+            }
+
+            // Refresh the calendar to reflect the changes
+            $("#datepicker").datepicker("refresh");
+
+        },
+        error: function() {
+            alert('An error occurred while saving the data.');
+        }
+    });
+});
+
+$.each(names, function(i, item) {
+  $('#namesContainer').append(`
+    <tr>
+        <td><span class="freelancer-icon freelancer-${item.name}"></span>${item.name}</td>
+        <td><input type="checkbox" class="presence-check" data-name="${item.name}" data-type="presence" id="${item.name}-presence"></td>
+        <td><input type="checkbox" class="payment-check" data-name="${item.name}" data-type="payment" id="${item.name}-payment"></td>
+    </tr>
+  `);
+});
+
+var currentDate = $.datepicker.formatDate('yy-mm-dd', new Date());
+fetchPresence(currentDate);
+</script>
+
+</body>
+</html>

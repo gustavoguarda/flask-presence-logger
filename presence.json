@@ -1,0 +1,1 @@
+[{"date": "2024-07-17", "names": [{"name": "John", "present": true, "paid": true}]}, {"date": "2024-07-25", "names": [{"name": "Mary", "present": true, "paid": false}]}, {"date": "2024-07-19", "names": [{"name": "John", "present": true, "paid": true}, {"name": "Mary", "present": true, "paid": true}]}]
